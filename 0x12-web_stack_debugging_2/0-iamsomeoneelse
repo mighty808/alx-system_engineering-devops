@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# This script runs `whoami` command under the user passed as an argument
-if [ $# -eq 1 ]; then
-	su "$1" -s /bin/bash -c "whoami"
-else
-	echo "Usage: ./0-iamsomeoneelse <user>"
-	exit 1
-fi
+# This script accepts one argument '
+# username' and runs the command 'whoami'
+# under the specified 'username'
+
+sudo -u "$1" whoami
