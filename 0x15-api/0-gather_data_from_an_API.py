@@ -1,31 +1,36 @@
 #!/usr/bin/python3
-""" Accessing a REST API for a todo list of employees"""
+"""
+Gather employee data from API
+"""
 
 import requests
 import sys
 
+REST_API = "https://jsonplaceholder.typicode.com"
 
 if __name__ == '__main__':
-    employee_id = int(sys.argv[1])
-    baseurl = "https://jsonplaceholder.typicode.com"
-    url = baseurl + "/users/" + employee_id
+    if len(sys.argv) > 1:
+        try:
+            id = int(sys.argv[1])
+        except ValueError:
+            print("Employee ID must be an integer.")
+            sys.exit(1)
 
-    response = requests.get(url)
-    employee_name = response.json().get('name')
+        user_response = requests.get(f'{REST_API}/users/{id}')
+        if user_response.status_code != 200:
+            print("Error: Employee not found.")
+            sys.exit(1)
 
-    todo_url = baseurl + "/todos?userId=" + employee_id
-    response = requests.get(todo_url)
-    tasks = response.json()
-    done = 0
-    done_tasks = []
+        user_data = user_response.json()
+        emp_name = user_data.get('name')
 
-    for task in tasks:
-        if task.get('completed'):
-            done_tasks.append(task)
-            done += 1
+        todos_response = requests.get(f'{REST_API}/todos?userId={id}')
+        todos_data = todos_response.json()
 
-    print("Employee {} is done with tasks({}/{}):"
-    .format(employee_name, done, len(tasks)))
+        tasks = list(filter(lambda x: x.get('userId') == id, todos_data))
+        completed_tasks = list(filter(lambda x: x.get('completed'), tasks))
 
-    for task in done_tasks:
-        print("\t {}".format(task.get('title')))
+        for task in completed_tasks:
+            print(f'\t {task.get("title")}')
+    else:
+        print("Usage: python3 0-gather_data_from_an_API.py <employee_id>")
